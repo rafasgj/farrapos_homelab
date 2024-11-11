@@ -1,0 +1,18 @@
+[Unit]
+Description=Gitea container
+
+[Container]
+ContainerName=gitea
+Image=localhost/gitea
+Volume=/opt/gitea/data:/gitea/data:Z
+Volume=/opt/gitea/log:/gitea/log:Z
+Volume=/opt/gitea/custom:/gitea/custom:Z
+Volume=/opt/gitea/conf:/gitea/conf:Z
+PublishPort={{ gitea_external_ssh_port }}:{{ gitea_ssh_port }}/tcp
+PublishPort={{ gitea_external_http_port }}:{{ gitea_http_port }}/tcp
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target

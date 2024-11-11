@@ -1,0 +1,8 @@
+---
+gitea_version: "1.22.3"
+gitea_arch: "arm-6"
+gitea_http_port: 3080
+gitea_external_http_port: 80
+gitea_enable_ssh: true
+gitea_ssh_port: 22
+gitea_external_ssh_port: 22

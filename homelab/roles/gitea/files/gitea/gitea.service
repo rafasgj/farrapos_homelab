@@ -1,0 +1,33 @@
+[Unit]
+Description=Gitea container
+Wants=network-online.target
+After=network-online.target
+SourcePath=/etc/containers/systemd/gitea.container
+RequiresMountsFor=%t/containers
+RequiresMountsFor=/opt/gitea
+
+[X-Container]
+ContainerName=gitea
+Image=localhost/gitea
+Volume=/opt/gitea/data:/gitea/data:Z
+Volume=/opt/gitea/log:/gitea/log:Z
+Volume=/opt/gitea/custom:/gitea/custom:Z
+Volume=/opt/gitea/conf:/gitea/conf:Z
+PublishPort={{ gitea_external_ssh_port }}:{{ gitea_ssh_port }}/tcp
+PublishPort={{ gitea_external_ssh_port }}:{{ gitea_http_port }}/tcp
+
+[Install]
+WantedBy=multi-user.target default.target
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+KillMode=mixed
+ExecStartPre=-/bin/rm -f %t/%N.cid
+ExecStop=/usr/bin/podman rm -v -f -i --cidfile=%t/%N.cid
+ExecStopPost=-/usr/bin/podman rm -v -f -i --cidfile=%t/%N.cid
+Delegate=yes
+Type=notify
+NotifyAccess=all
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman run --name=gitea --cidfile=%t/%N.cid --replace --rm --cgroups=split --sdnotify=conmon -d -v /opt/gitea/data:/gitea/data:Z -v /opt/gitea/log:/gitea/log:Z -v /opt/gitea/custom:/gitea/custom:Z -v /opt/gitea/conf:/gitea/conf:Z --publish {{ gitea_external_ssh_port }}:{{ gitea_ssh_port }}/tcp --publish {{ gitea_external_http_port }}:{{ gitea_http_port }}/tcp localhost/gitea
+

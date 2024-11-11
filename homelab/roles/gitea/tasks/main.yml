@@ -1,0 +1,165 @@
+---
+- name: Check arch
+  ansible.builtin.fail:
+    msg: "Invalid gitea_arch '{{ gitea_arch}}' use one of 'x86-64', 'arm-6', 'aarch64'"
+  when: gitea_arch not in ["x86-64", "arm-6", "aarch64"]
+
+- name: Ensure DNS facts are set
+  ansible.builtin.setup:
+    gather_subset: dns
+
+- name: Set role facts for specific architecture "arm-6"
+  when: gitea_arch == "arm-6"
+  ansible.builtin.set_fact:
+    gitea_arch: "arm-6"
+    gitea_base_image: "{{ gitea_container_image | default('docker.io/arm32v6/alpine:latest') }}"
+
+- name: Set role facts for specific architecture "aarch64"
+  when: gitea_arch == "aarch64"
+  ansible.builtin.set_fact:
+    gitea_arch: "arm64"
+    gitea_base_image: "{{ gitea_container_image | default('alpine:latest') }}"
+
+- name: Set role facts for specific architecture "x86-64"
+  when: gitea_arch == "x86-64"
+  ansible.builtin.set_fact:
+    gitea_arch: "amd64"
+    gitea_base_image: "{{ gitea_container_image | default('alpine:latest') }}"
+
+- name: Ensure Podman is available
+  ansible.builtin.package:
+    name: podman
+    state: present
+
+- name: Ensure Gitea directories exists
+  ansible.builtin.file:
+    path: /opt/gitea/{{ item }}
+    owner: root
+    group: root
+    mode: "0755"
+    state: directory
+  loop:
+    - conf
+    - data
+    - log
+    - custom
+
+- name: Copy Gitea Containerfile
+  ansible.builtin.template:
+    src: files/gitea/Containerfile
+    dest: /opt/gitea/Containerfile
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Copy Gitea configuration template
+  ansible.builtin.copy:
+    src: files/gitea/app.ini.in
+    dest: /opt/gitea/conf/app.ini.in
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Check Gitea image availability
+  ansible.builtin.shell:
+    cmd: |
+      podman inspect "localhost/gitea:latest" --format "{{ '{{' }}.Labels{{ '}}' }}"
+  register: image_check
+  changed_when: image_check.failed or (gitea_version not in image_check.stdout)
+  failed_when: false
+
+- name: Build Gitea container image
+  when: image_check.changed
+  ansible.builtin.shell:
+    cmd: |
+      podman build \
+        --build-arg version={{ gitea_version }} \
+        --build-arg arch={{ gitea_arch }} \
+        --build-arg hostname={{ hostname }} \
+        --build-arg domain={{ domain }} \
+        --build-arg disable_ssh={{ not gitea_enable_ssh | lower }} \
+        --build-arg ssh_port={{ gitea_ssh_port }} \
+        --build-arg http_port={{ gitea_http_port }} \
+        --build-arg external_http_port={{ gitea_external_http_port }} \
+        --volume /opt/gitea/data:/gitea/data:Z \
+        --volume /opt/gitea/log:/gitea/log:Z \
+        --volume /opt/gitea/custom:/gitea/custom:Z \
+        --volume /opt/gitea/conf:/gitea/conf:Z \
+        -t gitea \
+        /opt/gitea
+  vars:
+    hostname: "{{ gitea_hostname | default(ansible_facts['fqdn'].split('.')[0]) }}"
+    domain: "{{ gitea_domain | default(ansible_facts['fqdn'].split('.')[1:] | join('.')) }}"
+
+- name: Check if quadlet is supported
+  ansible.builtin.stat:
+    path: /usr/libexec/podman/quadlet
+  register: quadlet_support
+
+- name: Configure systemd service without quadlet
+  when: not quadlet_support.stat.exists
+  block:
+    - name: Configure Gitea service
+      ansible.builtin.template:
+        src: files/gitea/gitea.service
+        dest: /opt/gitea
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Create link for Gitea service
+      ansible.builtin.file:
+        src: /opt/gitea/gitea.service
+        dest: /etc/systemd/system/gitea.service
+        state: link
+
+- name: Configure systemd service with quadlet
+  when: quadlet_support.stat.exists
+  block:
+  - name: Ensure systemd containers directories exist
+    ansible.builtin.file:
+      path: /etc/containers/systemd
+      owner: root
+      group: root
+      mode: "0755"
+      state: directory
+
+  - name: Ensure quadlet_dir is set 
+    ansible.builtin.set_fact:
+      quadlet_dir: /etc/containers/systemd
+    when: quadlet_dir is undefined
+
+  - name: Configure Gitea quadlet
+    ansible.builtin.template:
+      src: files/gitea/gitea.container
+      dest: "{{ quadlet_dir }}/gitea.container"
+      owner: root
+      group: root
+      mode: "0644"
+
+- name: Reload daemon and start Gitea container
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: gitea
+    enabled: true
+    state: restarted
+
+- name: Open ports in the firewall
+  when: gitea_use_firewalld | default(true)
+  block:
+    - name: Ensure firewalld is available
+      ansible.builtin.package:
+        name: firewalld
+        state: present
+
+    - name: Configure firewalld for Gitea
+      ansible.posix.firewalld:
+        port: "{{ item }}/tcp"
+        permanent: true
+        zone: public
+        state: enabled
+      when: item != ""
+      loop:
+        - "{{ gitea_external_http_port }}"
+        - "{{ gitea_enable_ssh | ternary(gitea_external_ssh_port, '') }}"
+...

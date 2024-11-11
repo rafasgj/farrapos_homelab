@@ -1,0 +1,89 @@
+FROM {{ gitea_base_image }}
+
+ARG version="1.22.3"
+ARG arch="{{ gitea_arch }}"
+
+ARG hostname="raspberry"
+ARG domain="home.farrapos.net.br"
+
+ARG http_port="3080"
+ARG external_http_port="80"
+
+ARG disable_ssh="false"
+ARG ssh_port="22"
+
+ENV hostname=${hostname}
+ENV domain=${domain}
+ENV http_port=${http_port}
+ENV external_http_port=${external_http_port}
+
+LABEL "gitea.version"="${version}"
+LABEL "gitea.arch"="${arch}"
+
+# Ensure packages are installed and updated
+RUN apk upgrade --available \
+    && apk add --no-cache \
+        bash \
+        gettext-envsubst \ 
+        git \
+        ca-certificates \
+        curl \
+        gettext \
+        linux-pam \
+        openssh \
+        s6 \
+        sqlite \
+        su-exec \
+        gnupg \
+    && apk cache clean
+
+# Add user
+RUN mkdir /git \
+    && addgroup --system --gid 1000 git \
+    && adduser \
+        --system \
+        --shell /bin/sh \
+        --ingroup git \
+        --uid 1000 \
+        --home /git \
+        git \
+    && echo "git:*" | chpasswd -e
+
+# Install binary
+RUN mkdir -p /gitea/custom \\
+    && mkdir -p /gitea/data \\
+    && mkdir -p /gitea/log \\
+    && mkdir -p /gitea/conf \\
+    && mkdir -p /gitea/bin
+ADD --chmod=755 --chown=git:git https://dl.gitea.com/gitea/${version}/gitea-${version}-linux-${arch} /gitea/bin/gitea
+
+# Create directories
+RUN chown -R git:git /gitea \
+    && chmod -R 770 /gitea \
+    && chown root:git /gitea/conf
+
+# Configure Gitea
+RUN export \
+        gitea_internal_token="$(/gitea/bin/gitea generate secret INTERNAL_TOKEN)" \
+        gitea_oauth_jwt_secret="$(/gitea/bin/gitea generate secret JWT_SECRET)" \
+        gitea_lfs_jwt_secret="$(/gitea/bin/gitea generate secret JWT_SECRET)" \
+        http_port="${http_port}" \
+        external_http_port="${external_http_port}" \
+        disable_ssh="${disable_ssh}" \
+        ssh_port="${ssh_port}" \
+        hostname="${hostname}" \
+        domain="${domain}" \
+    && envsubst < /gitea/conf/app.ini.in > /gitea/conf/app.ini \
+    && rm /gitea/conf/app.ini.in
+
+RUN chown root:git /gitea/conf/app.ini \
+    && chmod 640 /gitea/conf/app.ini
+
+VOLUME [ "/gitea/data", "/gitea/log", "/gitea/custom", "/gitea/conf" ]
+
+ENV GITEA_WORK_DIR="/gitea"
+
+EXPOSE ${ssh_port}/tcp
+EXPOSE ${http_port}/tcp
+
+ENTRYPOINT [ "su", "-c", "/gitea/bin/gitea web -c /gitea/conf/app.ini", "git" ]
