@@ -6,3 +6,4 @@ gitea_external_http_port: 80
 gitea_enable_ssh: true
 gitea_ssh_port: 22
 gitea_external_ssh_port: 22
+gitea_use_firewalld: true

@@ -124,7 +124,7 @@
       mode: "0755"
       state: directory
 
-  - name: Ensure quadlet_dir is set 
+  - name: Ensure quadlet_dir is set
     ansible.builtin.set_fact:
       quadlet_dir: /etc/containers/systemd
     when: quadlet_dir is undefined
@@ -145,7 +145,7 @@
     state: restarted
 
 - name: Open ports in the firewall
-  when: gitea_use_firewalld | default(true)
+  when: gitea_use_firewalld
   block:
     - name: Ensure firewalld is available
       ansible.builtin.package:
