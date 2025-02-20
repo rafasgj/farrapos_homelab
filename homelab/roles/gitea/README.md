@@ -12,10 +12,6 @@ The following software is required on the target node:
 * Podman (installed if absent)
 * Firewalld (optional, installed if requested)
 
-The following Ansible collections are required:
-
-* ansible-posix
-
 The role must run with superuser privileges to configure systemd and install necessary packages.
 
 Role Variables
@@ -37,6 +33,12 @@ The following variables may be set to modify the behavior of the role:
 | `gitea\_container\_image` | The base container image to use. | No | alpine:latest |
 | `gitea\_use\_firewalld` | Whether to use firewalld to open ports. | No | true |
 
+Dependencies
+------------
+
+This role depends on the collections:
+
+* ansible.posix
 
 Example Playbook
 ----------------

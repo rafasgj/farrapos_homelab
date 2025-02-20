@@ -1,7 +1,6 @@
 galaxy_info:
   author: Rafael Guterres Jeffman
   description: Deploy Gitea on a container and control it through systemd
-  # company: 
 
   license: GPL-3.0-or-later
 
