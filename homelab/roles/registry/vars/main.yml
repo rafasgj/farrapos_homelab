@@ -1,0 +1,5 @@
+---
+service_name: registry
+service_description: OCI Registry container
+# service_image
+# service_port

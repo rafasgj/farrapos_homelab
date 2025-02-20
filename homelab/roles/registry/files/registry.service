@@ -1,0 +1,30 @@
+[Unit]
+Description={{ service_description }}
+Wants=network-online.target
+After=network-online.target
+SourcePath=/etc/containers/systemd/farrapos_{{ service_name }}.container
+RequiresMountsFor=%t/containers
+RequiresMountsFor=/opt/{{ service_name }}
+
+[X-Container]
+ContainerName=farrapos_{{ service_name }}
+Image={{ service_image }}
+# service specific
+Volume=/opt/registry/data:/var/lib/registry:Z
+PublishPort={{ registry_port }}:5000/tcp
+
+[Install]
+WantedBy=multi-user.target default.target
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+KillMode=mixed
+ExecStartPre=-/bin/rm -f %t/%N.cid
+ExecStop=/usr/bin/podman rm -v -f -i --cidfile=%t/%N.cid
+ExecStopPost=-/usr/bin/podman rm -v -f -i --cidfile=%t/%N.cid
+Delegate=yes
+Type=notify
+NotifyAccess=all
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman run --name=farrapos-{{service_name}} --cidfile=%t/%N.cid --replace --rm --cgroups=split --sdnotify=conmon -d -v /opt/registry/data:/var/lib/registry:z --publish {{ registry_port }}:5000/tcp {{ service_image }}
+

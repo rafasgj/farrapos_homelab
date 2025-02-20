@@ -1,0 +1,14 @@
+[Unit]
+Description=Container Registry container
+
+[Container]
+ContainerName=registry
+Image={{ registry_image }}
+Volume=/opt/registry/data:/var/lib/registry:z
+PublishPort={{ registry_port }}:5000/tcp
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target

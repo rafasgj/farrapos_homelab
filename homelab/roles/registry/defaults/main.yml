@@ -1,0 +1,3 @@
+---
+registry_port: 5000
+registry_use_firewalld: true
