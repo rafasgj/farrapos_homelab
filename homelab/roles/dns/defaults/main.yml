@@ -1,0 +1,6 @@
+---
+dns_subnet: "172.16.53.0/24"
+dns_deploy_nameserver: true
+dns_deploy_filter: true
+dns_adguard_image: "docker.io/adguard/adguardhome"
+dns_dashboard_port: 5380

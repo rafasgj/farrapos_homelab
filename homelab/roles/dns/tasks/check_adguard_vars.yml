@@ -1,0 +1,11 @@
+---
+- name: Ensure required variables are set
+  ansible.builtin.assert:
+    that:
+      - dns_subnet is defined
+      - dns_dashboard_port is defined
+      - dns_adguard_image is defined
+      - dns_credentials is defined
+      - dns_credentials.username is defined
+      - dns_credentials.password is defined
+

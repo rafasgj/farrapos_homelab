@@ -1,0 +1,20 @@
+[X-Pod]
+PodName=farrapos-dns-pod
+
+[Unit]
+RequiresMountsFor=%t/containers
+Wants=farrapos-dns-filter.service
+Before=farrapos-dns-filter.service
+Wants=farrapos-dns-nameserver.service
+Before=farrapos-dns-nameserver.service
+
+[Service]
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman pod start farrapos-dns-pod
+ExecStop=/usr/bin/podman pod stop --ignore --time=10 farrapos-dns-pod
+ExecStopPost=/usr/bin/podman pod rm --ignore --force farrapos-dns-pod
+ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile=%t/%N.pid --exit-policy=stop --replace --name=farrapos-dns-pod
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Type=forking
+Restart=on-failure
+PIDFile=%t/%N.pid

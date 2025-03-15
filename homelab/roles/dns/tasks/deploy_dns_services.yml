@@ -1,0 +1,20 @@
+---
+- name: Ensure DNS systemd unit directory exists
+  ansible.builtin.file:
+    dest: /opt/farrapos-homelab/dns
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+
+- name: Deploy DNS infra services
+  ansible.builtin.include_tasks: deploy_dns_infra_services.yml
+
+- name: Deploy Unbound nameserver services
+  when: dns_deploy_nameserver
+  ansible.builtin.include_tasks: deploy_unbound_services.yml
+
+- name: Deploy AdGuard DNS sink services
+  when: dns_deploy_filter
+  ansible.builtin.include_tasks: deploy_adguard_services.yml

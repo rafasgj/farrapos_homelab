@@ -1,0 +1,40 @@
+---
+- name: Stop DNS services
+  ansible.builtin.systemd_service:
+    name: "farrapos-dns-{{ item }}"
+    state: stopped
+  register: stop_svc
+  failed_when: stop_svc.failed and "Could not find the requested service" not in stop_svc.msg
+  loop:
+    - nameserver
+    - filter
+    - network
+    - pod
+
+- name: Remove DNS services
+  when: not quadlet_is_supported
+  ansible.builtin.file:
+    path: "/etc/systemd/system/farrapos-dns-{{ item }}.service"
+    state: absent
+  loop:
+    - nameserver
+    - filter
+    - network
+    - pod
+
+- name: Remove DNS quadlets
+  when: quadlet_is_supported
+  ansible.builtin.file:
+    path: "{{ quadlet_dir }}/farrapos-dns{{ item }}"
+    state: absent
+  loop:
+    - "-nameserver.container"
+    - "-filter.container"
+    - ".network"
+    - ".pod"
+
+- name: Remove DNS services configuration
+  ansible.builtin.file:
+    path: "/opt/farrapos-homelab/dns/"
+    state: absent
+

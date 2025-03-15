@@ -1,0 +1,15 @@
+---
+- name: Ensure required variables are set
+  ansible.builtin.assert:
+    that: quadlet_dir is defined
+
+- name: Deploy DNS infra quadlets
+  ansible.builtin.include_tasks: deploy_dns_infra_quadlets.yml
+
+- name: Deploy Unbound nameserver quadlets
+  when: dns_deploy_nameserver
+  ansible.builtin.include_tasks: deploy_unbound_quadlets.yml
+
+- name: Deploy AdGuard DNS sink quadlets
+  when: dns_deploy_filter
+  ansible.builtin.include_tasks: deploy_adguard_quadlets.yml

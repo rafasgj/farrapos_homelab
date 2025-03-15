@@ -1,0 +1,25 @@
+---
+- name: Create pod configuration file
+  ansible.builtin.copy:
+    dest: "{{ quadlet_dir }}/farrapos-dns.pod"
+    content: |
+      [Pod]
+      PodName=farrapos-dns
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create network configuration file
+  ansible.builtin.copy:
+    dest: "{{ quadlet_dir }}/farrapos-dns.network"
+    content: |
+      [Unit]
+      Description=DNS network
+      [Network]
+      NetworkName=farrapos-dns-net
+      DisableDNS=true
+      Subnet={{ dns_subnet }}
+      Gateway={{ __dns_gateway }}
+    owner: root
+    group: root
+    mode: "0644"

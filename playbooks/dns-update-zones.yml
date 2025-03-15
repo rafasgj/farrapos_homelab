@@ -1,0 +1,14 @@
+- name: Deploy DNS filter
+  hosts: staging
+  become: true
+  gather_facts: false
+  roles:
+    - role: farrapos.homelab.dns
+      state: updated
+      vars:
+        dns_domain: ["example.test"]
+        dns_zones:
+          - name: example.test.
+            file: data/example.test.zone
+          - name: 173.168.192.in-addr.arpa.
+            file: data/173.168.192.in-addr.arpa.zone

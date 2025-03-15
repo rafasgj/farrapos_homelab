@@ -1,0 +1,39 @@
+---
+- name: Ensure Unbound data directory exists
+  ansible.builtin.file:
+    path: /opt/unbound/
+    owner: root
+    group: root
+    mode: "0755"
+    state: directory
+
+- name: Copy Unbound configuration
+  ansible.builtin.template:
+    src: templates/unbound.conf
+    dest: /opt/unbound/unbound.conf
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Ensure log file exists and is writable
+  ansible.builtin.file:
+    state: touch
+    path: /opt/unbound/unbound.log
+    owner: root
+    group: root
+    mode: "0666"
+    modification_time: preserve
+
+- name: Copy Unbound Containerfile
+  ansible.builtin.copy:
+    src: files/unbound/Containerfile
+    dest: /opt/unbound/Containerfile
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Build Unbound container image
+  ansible.builtin.shell:
+    cmd: podman build -t localhost/unbound /opt/unbound
+  register: image_build
+  changed_when: '"fetch" in image_build.stdout'

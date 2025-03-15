@@ -1,0 +1,20 @@
+---
+- name: Deploy Unbound
+  ansible.builtin.include_tasks: unbound.yml
+
+- name: Deploy AdGuard Home
+  ansible.builtin.include_tasks: adguard.yml
+
+- name: Install DNS using quadlets
+  when: quadlet_is_supported
+  ansible.builtin.include_tasks: deploy_dns_quadlets.yml
+
+- name: Install DNS using services
+  when: not quadlet_is_supported
+  ansible.builtin.include_tasks: deploy_dns_services.yml
+
+- name: Update DNS zones
+  ansible.builtin.include_tasks: update_nameserver_zones.yml
+
+- name: Update firewalld
+  ansible.builtin.include_tasks: firewalld_config.yml

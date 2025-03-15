@@ -1,0 +1,64 @@
+---
+- name: Generate password
+  delegate_to: localhost
+  no_log: true
+  run_once: true
+  become: false
+  block:
+  - name: Use htpasswd to generate hash
+    ansible.builtin.shell: htpasswd -B -C 10 -n -b '{{ dns_credentials.username }}' '{{ dns_credentials.password }}'
+    register: password
+
+  - name: Set password_hash var
+    set_fact:
+      password_hash: "{{ password.stdout.split(':')[1] }}"
+
+- name: Ensure AdGuard Home data directories exists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: root
+    group: root
+    mode: "0755"
+    state: directory
+  loop:
+    - /opt/adguardhome
+    - /opt/adguardhome/conf
+    - /opt/adguardhome/work
+
+- name: Copy AdGuard Home configuration
+  ansible.builtin.template:
+    src: templates/AdGuardHome.yaml
+    dest: /opt/adguardhome/conf/AdGuardHome.yaml
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Create Upstream DNS
+  block:
+    - name: Use open DNS nameservers
+      when: not dns_deploy_nameserver
+      ansible.builtin.copy:
+        dest: /opt/adguardhome/conf/upstream_dns
+        content: |
+          8.8.8.8
+          1.1.1.1
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Use enbedded Unbound nameserver
+      when: dns_deploy_nameserver
+      ansible.builtin.copy:
+        dest: /opt/adguardhome/conf/upstream_dns
+        content: |
+          {{ __dns_nameserver }}
+          [/in-addr.arpa/]{{ __dns_nameserver }}
+        owner: root
+        group: root
+        mode: "0600"
+
+- name: Pull AdGuard Home image to cache it locally
+  ansible.builtin.shell:
+    cmd: "podman pull {{ dns_adguard_image }}:{{ dns_adguard_tag | default('latest') }}"
+  register: image_pull
+  changed_when: '"already exists" not in image_pull.stdout'

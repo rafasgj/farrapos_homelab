@@ -1,0 +1,40 @@
+[Unit]
+Description=Adguard Home container
+Wants=network-online.target
+After=network-online.target
+SourcePath=/etc/containers/systemd/farrapos-dns-filter.container
+RequiresMountsFor=%t/containers
+RequiresMountsFor=/opt/adguardhome/conf
+RequiresMountsFor=/opt/adguardhome/work
+BindsTo=farrapos-dns-pod.service
+After=farrapos-dns-pod.service
+{{ __dns_after_unbound | default('# do not use local nameserver') }}
+
+[X-Container]
+ContainerName=farrapos-dns-filter
+Image=docker.io/adguard/adguardhome
+Volume=/opt/adguardhome/conf:/opt/adguardhome/conf:Z
+Volume=/opt/adguardhome/work:/opt/adguardhome/work:Z
+PublishPort=53:53/tcp
+PublishPort=53:53/udp
+PublishPort={{ dns_dashboard_port }}:80/tcp
+PublishPort=443:443/tcp
+PublishPort=443:443/udp
+Network=farrapos-dns-net
+Pod=farrapos-dns-pod.pod
+IP={{ __dns_filter }}
+
+[Service]
+Restart=unless-stopped
+Environment=PODMAN_SYSTEMD_UNIT=%n
+KillMode=mixed
+ExecStop=/usr/bin/podman rm -v -f -i farrapos-dns-filter
+ExecStopPost=-/usr/bin/podman rm -v -f -i farrapos-dns-filter
+Delegate=yes
+Type=notify
+NotifyAccess=all
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman run --name=farrapos-dns-filter --replace --rm --cgroups=split --network=farrapos-dns-net --sdnotify=conmon -d -v /opt/adguardhome/conf:/opt/adguardhome/conf:Z -v /opt/adguardhome/work:/opt/adguardhome/work:Z --publish 53:53/tcp --publish 53:53/udp --publish {{ dns_dashboard_port }}:80/tcp --publish 443:443/tcp --publish 443:443/udp --ip {{ __dns_filter }} --pod=farrapos-dns-pod docker.io/adguard/adguardhome
+
+[Install]
+WantedBy=default.target

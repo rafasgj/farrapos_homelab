@@ -1,0 +1,57 @@
+---
+- name: Ensure zone directories exist
+  ansible.builtin.file:
+    path: "/opt/unbound/zones"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy zone files
+  ansible.builtin.copy:
+    src: "{{ item.file | default(item.name ~ 'zone')}}"
+    dest: "/opt/unbound/zones/{{ item.file | default(item.name ~ 'zone') | basename }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ dns_zones }}"
+
+- name: Update root.hints
+  ansible.builtin.get_url:
+    url: https://www.internic.net/domain/named.root
+    dest: /opt/unbound/root.hints
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Configure private domains
+  ansible.builtin.lineinfile:
+    state: present
+    create: true
+    path: /opt/unbound/domains
+    insertafter: EOF
+    line: "private-domain: {{ item }}"
+    search_string: "private-domain: {{ item }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ dns_domain }}"
+
+- name: Configure authoritative zones
+  ansible.builtin.blockinfile:
+    state: present
+    create: true
+    path: /opt/unbound/zones.conf
+    insertafter: EOF
+    prepend_newline: true
+    marker: "# {mark} {{ item.name }}"
+    content: |
+      auth-zone:
+        name: "{{ item.name }}"
+        for-downstream: yes
+        for-upstream: no
+        zonefile: "/etc/unbound/zones/{{ item.file | default(item.name ~ 'zone') | basename }}"
+    owner: root
+    group: root
+    mode: "0644"
+  loop: "{{ dns_zones }}"

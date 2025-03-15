@@ -1,0 +1,24 @@
+---
+- name: Setup firewalld for DNS
+  ansible.posix.firewalld:
+    port: "{{ item.port }}"
+    permanent: true
+    zone: public
+    state: enabled
+  loop:
+    - port: 53/tcp
+    - port: 53/udp
+
+- name: Setup firewalld for DNS filter
+  when: dns_deploy_filter
+  ansible.posix.firewalld:
+    port: "{{ item.port }}"
+    permanent: true
+    zone: public
+    state: enabled
+  loop:
+    - port: "{{ dns_dashboard_port }}/tcp"
+    - port: 443/udp
+    - port: 443/tcp
+    # - port: 3000/tcp
+    # - port: 10053/udp

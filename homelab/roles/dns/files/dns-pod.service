@@ -1,0 +1,23 @@
+[X-Pod]
+PodName=farrapos-dns
+
+[Unit]
+# SourcePath=/etc/containers/systemd/farrapos-dns.pod
+RequiresMountsFor=%t/containers
+# wants/before depend on used services
+Wants=farrapos-adguard.service
+Before=farrapos-adguard.service
+Wants=farrapos-unbound.service
+Before=farrapos-unbound.service
+
+[Service]
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman pod start --pod-id-file=%t/%N.pod-id
+ExecStop=/usr/bin/podman pod stop --pod-id-file=%t/%N.pod-id --ignore --time=10
+ExecStopPost=/usr/bin/podman pod rm --pod-id-file=%t/%N.pod-id --ignore --force
+ExecStartPre=/usr/bin/podman pod create --infra-conmon-pidfile=%t/%N.pid --pod-id-file=%t/%N.pod-id --exit-policy=stop --replace --name=farrapos-dns
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Type=forking
+Restart=on-failure
+PIDFile=%t/%N.pid
+

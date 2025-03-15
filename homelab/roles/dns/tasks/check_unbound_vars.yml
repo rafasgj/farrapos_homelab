@@ -1,0 +1,15 @@
+---
+- name: Ensure required variables are set
+  ansible.builtin.assert:
+    that:
+      - dns_subnet is defined
+      - dns_domain is defined
+      - dns_zones is defined
+
+- name: Set publish port
+  when: not dns_deploy_filter
+  ansible.builtin.set_fact:
+    extra_fields: |
+      PublishPort=53:53/tcp
+      PublishPort=53:53/udp
+

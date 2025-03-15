@@ -1,0 +1,20 @@
+---
+- name: Define Unbound variables
+  ansible.builtin.include_tasks: check_unbound_vars.yml
+
+- name: Configure Unbound quadlet
+  ansible.builtin.template:
+    src: "templates/farrapos-dns-nameserver.service"
+    dest: "/opt/farrapos-homelab/dns/farrapos-dns-nameserver.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create links to systemd
+  ansible.builtin.file:
+    dest: "/etc/systemd/system/farrapos-dns-nameserver.service"
+    src: "/opt/farrapos-homelab/dns/farrapos-dns-nameserver.service"
+    state: link
+    owner: root
+    group: root
+    mode: "0644"

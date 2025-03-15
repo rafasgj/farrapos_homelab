@@ -1,0 +1,33 @@
+[Unit]
+Wants=network-online.target
+After=network-online.target
+Description=Unbound container
+SourcePath=/etc/containers/systemd/farrapos-dns-nameserver.container
+RequiresMountsFor=%t/containers
+RequiresMountsFor=/opt/unbound
+BindsTo=farrapos-dns-pod.service
+After=farrapos-dns-pod.service
+
+[X-Container]
+ContainerName=farrapos-dns-nameserver
+Image=localhost/unbound
+Volume=/opt/unbound:/etc/unbound:Z
+Network=farrapos-dns-net
+Pod=farrapos-dns-pod.pod
+IP={{ __dns_nameserver }}
+
+
+[Service]
+Restart=unless-stopped
+Environment=PODMAN_SYSTEMD_UNIT=%n
+KillMode=mixed
+ExecStop=/usr/bin/podman rm -v -f -i farrapos-dns-nameserver
+ExecStopPost=-/usr/bin/podman rm -v -f -i farrapos-dns-nameserver
+Delegate=yes
+Type=notify
+NotifyAccess=all
+SyslogIdentifier=%N
+ExecStart=/usr/bin/podman run --name=farrapos-dns-nameserver --replace --rm --cgroups=split --network=farrapos-dns-net --sdnotify=conmon -d -v /opt/unbound:/etc/unbound:Z --ip {{ __dns_nameserver }} --pod=farrapos-dns-pod localhost/unbound
+
+[Install]
+WantedBy=default.target

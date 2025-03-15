@@ -1,0 +1,29 @@
+- name: Deploy DNS filter
+  hosts: staging
+  become: true
+  gather_facts: false
+  roles:
+    - role: farrapos.homelab.dns
+      state: present
+      vars:
+        # DNS nameserver vars (Unbound)
+        dns_deploy_nameserver: true   # Same as the default value
+        dns_domain: ["example.test"]
+        dns_zones:
+          - name: example.test.
+            file: data/example.test.zone
+          - name: 173.168.192.in-addr.arpa.
+            file: data/173.168.192.in-addr.arpa.zone
+        dns_verbosity: 3           # Same as the default value
+        # DNS filter sink vars (AdGuard Home)
+        dns_deploy_filter: true   # Same as the default value
+        dns_credentials:
+          username: admin
+          password: secret123
+        dns_dashboard_port: 5380   # Same the default value
+        # the parameters below are optional and should not
+        # be changed unless really needed, and only if you
+        # are absolutely sure of what you are doing.
+        # The example values mimic the default behavior.
+        dns_subnet: "172.16.53.0/24"
+        dns_adguard_image: "docker.io/adguard/adguardhome"

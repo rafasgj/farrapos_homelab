@@ -1,0 +1,28 @@
+---
+- name: Create pod configuration file
+  ansible.builtin.copy:
+    dest: "/opt/farrapos-homelab/dns/farrapos-dns-pod.service"
+    src: "files/farrapos-dns-pod.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create network configuration file
+  ansible.builtin.template:
+    dest: "/opt/farrapos-homelab/dns/farrapos-dns-network.service"
+    src: "templates/farrapos-dns-network.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create links to systemd
+  ansible.builtin.file:
+    dest: "/etc/systemd/system/{{ item }}.service"
+    src: "/opt/farrapos-homelab/dns/{{ item }}.service"
+    state: link
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - farrapos-dns-pod
+    - farrapos-dns-network

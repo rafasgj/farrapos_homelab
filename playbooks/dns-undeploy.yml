@@ -1,0 +1,7 @@
+- name: Deploy DNS filter
+  hosts: staging
+  become: true
+  gather_facts: false
+  roles:
+    - role: farrapos.homelab.dns
+      state: absent

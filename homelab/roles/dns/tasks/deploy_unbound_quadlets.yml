@@ -1,0 +1,11 @@
+---
+- name: Define Unbound variables
+  ansbile.builtin.include_tasks: check_unbound_variables.yml
+
+- name: Configure Unbound quadlet
+  ansible.builtin.template:
+    src: "templates/unbound.container"
+    dest: "{{ quadlet_dir }}/farrapos-dns-nameserver.container"
+    owner: root
+    group: root
+    mode: "0644"

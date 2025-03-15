@@ -1,0 +1,27 @@
+---
+- name: Define AdGuard variables
+  ansible.builtin.include_tasks: check_adguard_vars.yml
+
+- name: Define if AdGuard will start after nameserver
+  when: dns_deploy_nameserver
+  ansible.builtin.set_fact:
+    __dns_after_unbound: |
+      After=farrapos-dns-nameserver.service
+      Wants=farrapos-dns-nameserver.service
+
+- name: Configure AdGuard Home service
+  ansible.builtin.template:
+    src: "templates/farrapos-dns-filter.service"
+    dest: "/opt/farrapos-homelab/dns/farrapos-dns-filter.service"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Create links to systemd
+  ansible.builtin.file:
+    dest: "/etc/systemd/system/farrapos-dns-filter.service"
+    src: "/opt/farrapos-homelab/dns/farrapos-dns-filter.service"
+    state: link
+    owner: root
+    group: root
+    mode: "0644"

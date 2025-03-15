@@ -1,0 +1,23 @@
+---
+- name: Test DNS IP query module
+  become: false
+  gather_facts: false
+  hosts: all
+  tasks:
+    - name: Query IP address
+      farrapos.homelab.dns_subnet_query:
+        dns_subnet: "192.168.123.255/24"
+      register: result
+      failed_when: result.changed or result.failed
+      delegate_to: localhost
+      run_once: true
+
+    - name: Check IP adresses
+      ansible.builtin.assert:
+        that:
+          - result.dns_ips.dns_subnet == "192.168.123.0/24"
+          - result.dns_ips.dns_gateway == "192.168.123.1"
+          - result.dns_ips.dns_nameserver == "192.168.123.2"
+          - result.dns_ips.dns_filter == "192.168.123.3"
+      delegate_to: localhost
+      run_once: true

@@ -1,0 +1,18 @@
+---
+- name: Define AdGuard variables
+  ansbile.builtin.include_tasks: check_adguard_vars.yml
+
+- name: Define if AdGuard will start after nameserver
+  when: dns_deploy_nameserver
+  ansible.builtin.set_fact:
+    __dns_after_unbound: |
+      After=adguard.container
+      Wants=adguard.container
+
+- name: Configure AdGuard Home quadlet
+  ansible.builtin.template:
+    src: "templates/adguard.container"
+    dest: "{{ quadlet_dir }}/farrapos-dns-filter.container"
+    owner: root
+    group: root
+    mode: "0644"

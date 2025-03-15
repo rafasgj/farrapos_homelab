@@ -1,0 +1,17 @@
+[Unit]
+Description=Unbound container
+
+[Container]
+ContainerName=farrapos-dns-nameserver
+Image=localhost/unbound
+Volume=/opt/unbound:/etc/unbound:Z
+Network=farrapos-dns-net
+Pod=farrapos-dns.pod
+IP={{ __dns_nameserver }}
+{{ extra_fields | default('') }}
+
+[Service]
+Restart=unless-stopped
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,15 @@
+$TTL 3600
+$ORIGIN 173.168.192.in-addr.arpa.
+@   IN SOA nameserver.example.test hostmaster.nameserver.example.test (
+        20250227103301  ; serial
+                 10800  ; refresh (3 hours)
+                   900  ; retry (15 min)
+                604800  ; expire (1 week)
+                 86400  ; minimum (1 day)
+    )
+    IN  NS kamino.home.farrapos.net.br.     86400
+
+250  IN  PTR  nameserver.ipa.test.
+10   IN  PTR  server.ipa.test.
+101  IN  PTR  cli-01.ipa.test.
+102  IN  PTR  cli-02.ipa.test.

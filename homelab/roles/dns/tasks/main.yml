@@ -1,0 +1,46 @@
+---
+- name: Check if quadlet is supported
+  when: quadlet_supported is not defined
+  block:
+    - name: Check if quadlet executable exists
+      ansible.builtin.stat:
+        path: /usr/libexe/podman/quadlet
+        follow: true
+        get_attributes: false
+        get_checksum: false
+        get_mime: false
+      register: result
+
+    - name: Set quadlet support fact
+      ansible.builtin.set_fact:
+        quadlet_is_supported: "{{ result.stat.exists }}"
+
+- name: Define nodes IP addresses
+  block:
+    - name: Query IP addresses for subnet
+      dns_subnet_query:
+        dns_subnet: "{{ dns_subnet }}"
+      register: result
+
+    - name: Set IP addreeses facts
+      ansible.builtin.set_fact:
+        dns_subnet: "{{ result.dns_ips.dns_subnet }}"
+        __dns_gateway: "{{ result.dns_ips.dns_gateway }}"
+        __dns_nameserver: "{{ result.dns_ips.dns_nameserver }}"
+        __dns_filter: "{{ result.dns_ips.dns_filter }}"
+
+- name: Intall DNS nameserver and filter
+  when: state == "present"
+  ansible.builtin.include_tasks: dns_install.yml
+
+- name: Uninstall DNS nameserver and filter
+  when: state == "absent"
+  ansible.builtin.include_tasks: dns_uninstall.yml
+
+- name: Update DNS zones
+  when: state == "updated"
+  ansible.builtin.include_tasks: dns_nameserver_update_zones.yml
+
+- name: Start DNS services
+  when: state in ["present", "updated"]
+  ansible.builtin.include_tasks: restart_services.yml

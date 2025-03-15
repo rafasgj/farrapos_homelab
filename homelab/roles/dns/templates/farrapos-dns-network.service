@@ -1,0 +1,16 @@
+[Unit]
+Description=DNS network
+RequiresMountsFor=%t/containers
+
+[X-Network]
+NetworkName=farrapos-dns-net
+DisableDNS=true
+Subnet={{ dns_subnet }}
+Gateway={{ __dns_gateway }}
+
+[Service]
+ExecStartPre=-/usr/bin/podman network rm --force farrapos-dns-net
+ExecStart=/usr/bin/podman network create --disable-dns --subnet={{ dns_subnet }} --gateway={{ __dns_gateway }} farrapos-dns-net
+Type=oneshot
+RemainAfterExit=yes
+SyslogIdentifier=%N
