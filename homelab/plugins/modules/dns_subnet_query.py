@@ -23,7 +23,7 @@
 
 from ansible.module_utils.basic import AnsibleModule
 
-__metaclass__ = type
+__metaclass__ = type   # pylint: disable=invalid-name
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -64,7 +64,10 @@ dns_ips:
   dns_filter: "172.16.53.251"
 '''
 
+# pylint: disable=wrong-import-position, wrong-import-order
 import ipaddress
+
+# pylint: enable=wrong-import-position, wrong-import-order
 
 
 def main():
@@ -73,7 +76,7 @@ def main():
         argument_spec={"dns_subnet": {"required": True, "type": "str"}},
         supports_check_mode=False,
     )
-    ansible_module._ansible_debug = True
+    ansible_module._ansible_debug = True  # pylint: disable=protected-access
 
     cidr = ansible_module.params.get('dns_subnet')
     try:
