@@ -1,3 +1,4 @@
+---
 http:
   pprof:
     port: 6060
@@ -5,8 +6,8 @@ http:
   address: 0.0.0.0:80
   session_ttl: 720h
 users:
-  - name: {{ dns_credentials.username }}
-    password: {{ password_hash }}
+  - name: "{{ dns_credentials.username }}"
+    password: "{{ password_hash }}"
 auth_attempts: 5
 block_auth_min: 15
 http_proxy: ""
@@ -59,7 +60,7 @@ dns:
   bootstrap_prefer_ipv6: false
   upstream_timeout: 10s
   private_networks:
-    - {{ dns_subnet }}
+    - "{{ dns_subnet }}"
   use_private_ptr_resolvers: true
   local_ptr_upstreams: []
   use_dns64: false

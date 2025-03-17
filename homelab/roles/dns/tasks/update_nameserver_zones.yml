@@ -10,10 +10,12 @@
 - name: Copy zone files
   ansible.builtin.copy:
     src: "{{ item.file | default(item.name ~ 'zone')}}"
-    dest: "/opt/unbound/zones/{{ item.file | default(item.name ~ 'zone') | basename }}"
+    dest: "/opt/unbound/zones/{{ filename }}"
     owner: root
     group: root
     mode: "0644"
+  vars:
+    filename: "{{ item.file | default(item.name ~ 'zone') | basename }}"
   loop: "{{ dns_zones }}"
 
 - name: Update root.hints
@@ -50,8 +52,10 @@
         name: "{{ item.name }}"
         for-downstream: yes
         for-upstream: no
-        zonefile: "/etc/unbound/zones/{{ item.file | default(item.name ~ 'zone') | basename }}"
+        zonefile: "/etc/unbound/zones/{{ filename }}"
     owner: root
     group: root
     mode: "0644"
+  vars:
+    filename: "{{ item.file | default(item.name ~ 'zone') | basename }}"
   loop: "{{ dns_zones }}"

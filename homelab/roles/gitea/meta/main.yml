@@ -1,11 +1,9 @@
+---
 galaxy_info:
   author: Rafael Guterres Jeffman
   description: Deploy Gitea on a container and control it through systemd
-
   license: GPL-3.0-or-later
-
   min_ansible_version: 2.16
-
   galaxy_tags: [git, gitea]
 
 dependencies: []

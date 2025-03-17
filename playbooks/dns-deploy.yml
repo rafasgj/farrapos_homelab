@@ -1,3 +1,4 @@
+---
 - name: Deploy DNS filter
   hosts: staging
   become: true

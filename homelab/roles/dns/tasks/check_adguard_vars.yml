@@ -8,4 +8,3 @@
       - dns_credentials is defined
       - dns_credentials.username is defined
       - dns_credentials.password is defined
-

@@ -4,7 +4,9 @@
     name: "farrapos-dns-{{ item }}"
     state: stopped
   register: stop_svc
-  failed_when: stop_svc.failed and "Could not find the requested service" not in stop_svc.msg
+  failed_when:
+    stop_svc.failed and
+    "Could not find the requested service" not in stop_svc.msg
   loop:
     - nameserver
     - filter
@@ -37,4 +39,3 @@
   ansible.builtin.file:
     path: "/opt/farrapos-homelab/dns/"
     state: absent
-

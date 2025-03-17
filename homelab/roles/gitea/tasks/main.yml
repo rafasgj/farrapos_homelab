@@ -116,26 +116,26 @@
 - name: Configure systemd service with quadlet
   when: quadlet_support.stat.exists
   block:
-  - name: Ensure systemd containers directories exist
-    ansible.builtin.file:
-      path: /etc/containers/systemd
-      owner: root
-      group: root
-      mode: "0755"
-      state: directory
+    - name: Ensure systemd containers directories exist
+      ansible.builtin.file:
+        path: /etc/containers/systemd
+        owner: root
+        group: root
+        mode: "0755"
+        state: directory
 
-  - name: Ensure quadlet_dir is set
-    ansible.builtin.set_fact:
-      quadlet_dir: /etc/containers/systemd
-    when: quadlet_dir is undefined
+    - name: Ensure quadlet_dir is set
+      ansible.builtin.set_fact:
+        quadlet_dir: /etc/containers/systemd
+      when: quadlet_dir is undefined
 
-  - name: Configure Gitea quadlet
-    ansible.builtin.template:
-      src: files/gitea/gitea.container
-      dest: "{{ quadlet_dir }}/gitea.container"
-      owner: root
-      group: root
-      mode: "0644"
+    - name: Configure Gitea quadlet
+      ansible.builtin.template:
+        src: files/gitea/gitea.container
+        dest: "{{ quadlet_dir }}/gitea.container"
+        owner: root
+        group: root
+        mode: "0644"
 
 - name: Reload daemon and start Gitea container
   ansible.builtin.systemd_service:
