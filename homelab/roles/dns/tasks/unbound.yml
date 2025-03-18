@@ -33,7 +33,7 @@
     mode: "0644"
 
 - name: Build Unbound container image
-  ansible.builtin.shell:
+  ansible.builtin.shell:   # noqa: command-instead-of-shell
     cmd: podman build -t localhost/unbound /opt/unbound
   register: image_build
   changed_when: '"fetch" in image_build.stdout'

@@ -1,14 +1,14 @@
 ---
 namespace: farrapos
 name: homelab
-version: 0.3.0
+version: 0.3.0   # noqa: galaxy[version-incorrect]
 readme: README.md
 authors:
   - Rafael Guterres Jeffman <rafasgj@gmail.com>
 description: "A collection to set services using low-end Raspberry Pi"
 license:
   - GPL-3.0-or-later
-tags: [homelab, raspberry, services]
+tags: [linux, homelab, raspberry, services]
 
 dependencies:
   ansible.posix: '*'

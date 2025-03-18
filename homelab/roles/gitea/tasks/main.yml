@@ -1,7 +1,7 @@
 ---
 - name: Check arch
   ansible.builtin.fail:
-    msg: "Invalid gitea_arch '{{ gitea_arch}}' use one of 'x86-64', 'arm-6', 'aarch64'"
+    msg: "Invalid gitea_arch '{{ gitea_arch }}' use one of 'x86-64', 'arm-6', 'aarch64'"
   when: gitea_arch not in ["x86-64", "arm-6", "aarch64"]
 
 - name: Ensure DNS facts are set
@@ -70,7 +70,7 @@
 
 - name: Build Gitea container image
   when: image_check.changed
-  ansible.builtin.shell:
+  ansible.builtin.shell:  # noqa: no-handler
     cmd: |
       podman build \
         --build-arg version={{ gitea_version }} \
@@ -87,6 +87,7 @@
         --volume /opt/gitea/conf:/gitea/conf:Z \
         -t gitea \
         /opt/gitea
+  changed: true
   vars:
     hostname: "{{ gitea_hostname | default(ansible_facts['fqdn'].split('.')[0]) }}"
     domain: "{{ gitea_domain | default(ansible_facts['fqdn'].split('.')[1:] | join('.')) }}"

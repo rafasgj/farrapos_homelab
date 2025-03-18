@@ -12,9 +12,10 @@
               '{{ dns_credentials.username }}' \
               '{{ dns_credentials.password }}'
       register: password
+      changed_when: false
 
     - name: Set password_hash var
-      set_fact:
+      ansible.builtin.set_fact:
         password_hash: "{{ password.stdout.split(':')[1] }}"
 
 - name: Ensure AdGuard Home data directories exists

@@ -3,7 +3,7 @@ galaxy_info:
   author: Rafael Guterres Jeffman
   description: Deploy an OCI registry on a container managed by systemd
   license: GPL-3.0-or-later
-  min_ansible_version: 2.16
-  galaxy_tags: [container, OCI, registry]
+  min_ansible_version: "2.16.0"
+  galaxy_tags: [container, oci, registry]
 
 dependencies: []

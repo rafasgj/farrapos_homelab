@@ -1,4 +1,2 @@
 ---
-requires_ansible: '>=2.16'
-dependencies:
-  ansible.posix: "*"
+requires_ansible: '>=2.16.0'

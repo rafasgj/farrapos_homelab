@@ -39,7 +39,7 @@
 
 - name: Update DNS zones
   when: state == "updated"
-  ansible.builtin.include_tasks: dns_nameserver_update_zones.yml
+  ansible.builtin.include_tasks: update_nameserver_zones.yml
 
 - name: Start DNS services
   when: state in ["present", "updated"]
