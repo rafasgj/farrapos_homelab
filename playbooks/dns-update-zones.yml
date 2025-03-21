@@ -1,6 +1,6 @@
 ---
 - name: Deploy DNS filter
-  hosts: staging
+  hosts: nameservers
   become: true
   gather_facts: false
   roles:
