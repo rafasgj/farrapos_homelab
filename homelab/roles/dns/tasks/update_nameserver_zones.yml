@@ -7,16 +7,21 @@
     group: root
     mode: "0755"
 
+- name: Set local zone file names
+  ansible.builtin.set_fact:
+    __dns_zones:
+      "{{ __dns_zones | default([]) + [ (((item.file | default(item.name ~ 'zone'))[0] == '/') | \
+       ternary(item.file, lookup('env', 'PWD') ~ '/' ~ item.file)) ] }}"
+  loop: "{{ dns_zones }}"
+
 - name: Copy zone files
   ansible.builtin.copy:
-    src: "{{ item.file | default(item.name ~ 'zone')}}"
-    dest: "/opt/unbound/zones/{{ filename }}"
+    src: "{{ item }}"
+    dest: "/opt/unbound/zones/{{ item | basename }}"
     owner: root
     group: root
     mode: "0644"
-  vars:
-    filename: "{{ item.file | default(item.name ~ 'zone') | basename }}"
-  loop: "{{ dns_zones }}"
+  loop: "{{ __dns_zones }}"
 
 - name: Update root.hints
   ansible.builtin.get_url:
