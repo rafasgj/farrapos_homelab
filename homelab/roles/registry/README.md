@@ -23,7 +23,7 @@ The following variables may be set to modify the behavior of the role:
 | :--- | :---------- | :------: | :------ |
 | `registry\_arch`  | The achitecture to download. Valid values are: "arm-6", "x86-64", "aarch64". | no | autodetected |
 | `registry\_image`  | The OCI registry image to use. Will override `registry_arch` setting. | no | [registry:latest](https://hub.docker.com/layers/library/registry) |
-| `registry\_port`  | The external service TCP port. | no | 80 |
+| `registry\_port`  | The external service TCP port. | no | 5000 |
 | `registry\_use\_firewalld` | Whether to use firewalld to open ports. | no | true |
 
 Dependencies
