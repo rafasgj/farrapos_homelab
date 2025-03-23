@@ -51,7 +51,7 @@
         group: root
         mode: "0600"
 
-    - name: Use enbedded Unbound nameserver
+    - name: Use embedded Unbound nameserver
       when: dns_deploy_nameserver
       ansible.builtin.copy:
         dest: /opt/adguardhome/conf/upstream_dns
