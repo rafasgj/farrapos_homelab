@@ -1,6 +1,6 @@
 ---
 - name: Define AdGuard variables
-  ansbile.builtin.include_tasks: check_adguard_vars.yml
+  ansible.builtin.include_tasks: check_adguard_vars.yml
 
 - name: Define if AdGuard will start after nameserver
   when: dns_deploy_nameserver

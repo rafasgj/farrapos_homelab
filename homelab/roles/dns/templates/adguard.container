@@ -1,6 +1,6 @@
 [Unit]
 Description=Adguard Home container
-{{ __dns_after_unbound | default('# don't use local nameserver') }}
+{{ __dns_after_unbound | default('# do not use local nameserver') }}
 
 [Container]
 ContainerName=farrapos-dns-filter

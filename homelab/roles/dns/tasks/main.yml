@@ -1,10 +1,10 @@
 ---
 - name: Check if quadlet is supported
-  when: quadlet_supported is not defined
+  when: quadlet_is_supported is not defined
   block:
     - name: Check if quadlet executable exists
       ansible.builtin.stat:
-        path: /usr/libexe/podman/quadlet
+        path: /usr/libexec/podman/quadlet
         follow: true
         get_attributes: false
         get_checksum: false

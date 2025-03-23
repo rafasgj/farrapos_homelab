@@ -1,6 +1,6 @@
 ---
 - name: Define Unbound variables
-  ansbile.builtin.include_tasks: check_unbound_variables.yml
+  ansible.builtin.include_tasks: check_unbound_vars.yml
 
 - name: Configure Unbound quadlet
   ansible.builtin.template:
