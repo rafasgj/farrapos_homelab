@@ -1,19 +1,11 @@
 ---
-- name: Ensure podman is installed
-  ansible.builtin.package:
-    name: podman
-    state: present
-
 - name: Ensure registry directories exist
   ansible.builtin.file:
-    path: "{{ item }}"
+    path: /opt/farrapos/registry/data
     mode: "0755"
     owner: root
     group: root
     state: directory
-  loop:
-    - /opt/registry
-    - /opt/registry/data
 
 - name: Define image name
   when: registry_image is undefined
@@ -54,16 +46,7 @@
       ansible.builtin.set_fact:
         registry_image: docker.io/amd64/registry:latest
 
-- name: Pull registry image
-  ansible.builtin.shell: |
-    podman pull {{ registry_image }}
-    podman tag {{ registry_image }} localhost/farrapos_registry:latest
-  changed_when: true
-
 - name: Configure service and system
-  vars:
-    service_image: localhost/farrapos_registry:latest
-    service_port: "{{ registry_port }}"
   block:
     - name: Check if quadlet is supported
       ansible.builtin.stat:
@@ -75,16 +58,16 @@
       block:
         - name: Configure OCI registry service
           ansible.builtin.template:
-            src: "files/{{ service_name }}.service"
-            dest: "/opt/{{ service_name }}/farrapos_{{ service_name }}.service"
+            src: "files/registry.service"
+            dest: "/opt/farrapos/registry/farrapos-registry.service"
             owner: root
             group: root
             mode: "0644"
 
         - name: Create link for OCI registry service
           ansible.builtin.file:
-            src: "/opt/{{ service_name }}/farrapos_{{ service_name }}.service"
-            dest: "/etc/systemd/system/farrapos_{{ service_name }}.service"
+            src: "/opt/farrapos/registry/farrapos-registry.service"
+            dest: "/etc/systemd/system/farrapos-registry.service"
             state: link
 
     - name: Configure systemd service with quadlet
@@ -95,44 +78,26 @@
             quadlet_dir: /etc/containers/systemd
           when: quadlet_dir is undefined
 
-        - name: Ensure systemd containers directories exist
-          ansible.builtin.file:
-            path: "{{ quadlet_dir }}"
-            owner: root
-            group: root
-            mode: "0755"
-            state: directory
-
         - name: Configure registry quadlet
           ansible.builtin.template:
-            src: files/{{ service_name }}.container
-            dest: "{{ quadlet_dir }}/farrapos_{{ service_name }}.container"
+            src: files/registry.container
+            dest: "{{ quadlet_dir }}/farrapos-registry.container"
             owner: root
             group: root
             mode: "0644"
 
-    - name: Ensure service is running
-      ansible.builtin.systemd_service:
-        daemon_reload: true
-        name: "farrapos_{{ service_name }}"
-        enabled: true
-        state: restarted
+- name: Ensure service is running
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+    name: "farrapos-registry"
+    enabled: true
+    state: restarted
 
-    - name: Open ports in the firewall
-      when: registry_use_firewalld
-      block:
-        - name: Ensure firewalld is available
-          ansible.builtin.package:
-            name: firewalld
-            state: present
-
-        - name: Configure firewalld for OCI registry
-          ansible.posix.firewalld:
-            port: "{{ item }}/tcp"
-            permanent: true
-            zone: public
-            state: enabled
-          when: item != ""
-          loop:
-            - "{{ service_port | default('5000') }}"
+- name: Open ports in the firewall
+  when: registry_use_firewalld
+  ansible.posix.firewalld:
+    port: "{{ registry_port }}/tcp"
+    permanent: true
+    zone: public
+    state: enabled
 ...

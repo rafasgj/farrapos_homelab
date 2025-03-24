@@ -1,16 +1,15 @@
 [Unit]
-Description={{ service_description }}
+Description="Registry container"
 Wants=network-online.target
 After=network-online.target
-SourcePath=/etc/containers/systemd/farrapos_{{ service_name }}.container
 RequiresMountsFor=%t/containers
-RequiresMountsFor=/opt/{{ service_name }}
+RequiresMountsFor=/opt/registry
 
 [X-Container]
-ContainerName=farrapos_{{ service_name }}
-Image={{ service_image }}
+ContainerName=farrapos-registry
+Image={{ registry_image }}
 # service specific
-Volume=/opt/registry/data:/var/lib/registry:Z
+Volume=/opt/farrapos/registry/data:/var/lib/registry:Z
 PublishPort={{ registry_port }}:5000/tcp
 
 [Install]
@@ -26,5 +25,4 @@ Delegate=yes
 Type=notify
 NotifyAccess=all
 SyslogIdentifier=%N
-ExecStart=/usr/bin/podman run --name=farrapos-{{service_name}} --cidfile=%t/%N.cid --replace --rm --cgroups=split --sdnotify=conmon -d -v /opt/registry/data:/var/lib/registry:z --publish {{ registry_port }}:5000/tcp {{ service_image }}
-
+ExecStart=/usr/bin/podman run --name=farrapos-registry --cidfile=%t/%N.cid --replace --rm --cgroups=split --sdnotify=conmon -d -v /opt/farrapos/registry/data:/var/lib/registry:z --publish {{ registry_port }}:5000/tcp {{ registry_image }}

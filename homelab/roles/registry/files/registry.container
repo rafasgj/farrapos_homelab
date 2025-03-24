@@ -4,7 +4,7 @@ Description=Container Registry container
 [Container]
 ContainerName=registry
 Image={{ registry_image }}
-Volume=/opt/registry/data:/var/lib/registry:z
+Volume=/opt/farrapos/registry/data:/var/lib/registry:z
 PublishPort={{ registry_port }}:5000/tcp
 
 [Service]
