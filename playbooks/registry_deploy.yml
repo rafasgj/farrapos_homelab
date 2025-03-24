@@ -1,0 +1,8 @@
+---
+- name: Deploy registry
+  hosts: registry
+  become: true
+  gather_facts: false
+  roles:
+    - role: farrapos.homelab.registry
+      state: present
